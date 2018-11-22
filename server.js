@@ -85,6 +85,23 @@
 var mongo = require('mongodb');
 var db_url = "mongodb://"+process.env.IP+":27017";
 var db;
+var mongoose= require("mongoose");
+
+mongoose.connect(db_url+"/node-cw9");
+mongoose.connection.on('error',function(){
+  console.log('Could not connect to mongodb');
+})
+var Schema= mongoose.Schema;
+var articleSchema = new Schema({
+  title: {
+    type:String,
+    required:"Title required"
+  },
+  content: {
+    type: String
+  }
+});
+var Article = mongoose.model('Article', articleSchema);
 mongo.MongoClient.connect(db_url,{useNewUrlParser:true},function(err,client){
   if(err){
     console.log('Could not connect to MongoDB');
@@ -129,13 +146,20 @@ app.get('/new-article', function(request, response){
 var article = [];
 
 app.post('/article/create', function(request, response){
+  var new_article = new Article(request.body);
+  new_article.save(function(err, data){
+    if(err)
+    return response.status(400).json({error:"Please add a title"}); 
+    console.log(data);
+    return response.status(200).json({message: "Article successfully created"});
+  })
   console.log(request.body);
-  // Required field: Title
-  if(!request.body.title){
+  /* Required field: Title
+  /if(!request.body.title){
     return response.status(400).json({error:"Please add a title"});
   }
   save(request.body);
-  return response.status(200).json({message: "Article successfully created"});
+  return response.status(200).json({message: "Article successfully created"});*/
 });
 
 app.get('/article/list', function(request, response){
